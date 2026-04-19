@@ -1,0 +1,382 @@
+{
+  " Cocos Creator": {
+    "Version": "3.8.0"
+  },
+  "scene": {
+    "id": 1,
+    "name": "MainMenu",
+    "sceneType": 0,
+    "children": [
+      {
+        "id": 2,
+        "name": "Canvas",
+        "layer": 1073741824,
+        "position": [480, 320, 0],
+        "rotation": [0, 0, 0, 1],
+        "scale": [1, 1, 1],
+        "size": [960, 640],
+        "children": [
+          {
+            "id": 3,
+            "name": "Background",
+            "layer": 1073741824,
+            "position": [0, 0, 0],
+            "scale": [1, 1, 1],
+            "size": [960, 640],
+            "components": [
+              {
+                "type": "cc.Sprite",
+                "properties": {
+                  "spriteFrame": null,
+                  "type": 0,
+                  "sizeMode": 0
+                }
+              }
+            ]
+          },
+          {
+            "id": 4,
+            "name": "LogoLabel",
+            "layer": 1073741824,
+            "position": [0, 180, 0],
+            "scale": [1, 1, 1],
+            "components": [
+              {
+                "type": "cc.Label",
+                "properties": {
+                  "string": "萌系卡牌对战",
+                  "fontSize": 48,
+                  "horizontalAlign": 1,
+                  "verticalAlign": 1
+                }
+              }
+            ]
+          },
+          {
+            "id": 5,
+            "name": "PlayerInfoLabel",
+            "layer": 1073741824,
+            "position": [-300, 250, 0],
+            "scale": [1, 1, 1],
+            "components": [
+              {
+                "type": "cc.Label",
+                "properties": {
+                  "string": "等级: 1  金币: 1000  卡牌: 0种/0张",
+                  "fontSize": 18,
+                  "horizontalAlign": 0,
+                  "verticalAlign": 0
+                }
+              }
+            ]
+          },
+          {
+            "id": 6,
+            "name": "VersionLabel",
+            "layer": 1073741824,
+            "position": [350, -280, 0],
+            "scale": [1, 1, 1],
+            "components": [
+              {
+                "type": "cc.Label",
+                "properties": {
+                  "string": "v1.0.0",
+                  "fontSize": 14,
+                  "horizontalAlign": 2,
+                  "verticalAlign": 2
+                }
+              }
+            ]
+          },
+          {
+            "id": 7,
+            "name": "BattleButton",
+            "layer": 1073741824,
+            "position": [0, 60, 0],
+            "scale": [1, 1, 1],
+            "size": [200, 60],
+            "children": [
+              {
+                "id": 71,
+                "name": "Background",
+                "layer": 1073741824,
+                "position": [0, 0, 0],
+                "scale": [1, 1, 1],
+                "size": [200, 60],
+                "components": [
+                  {
+                    "type": "cc.Sprite",
+                    "properties": {
+                      "spriteFrame": null,
+                      "type": 1,
+                      "sizeMode": 0
+                    }
+                  }
+                ]
+              },
+              {
+                "id": 72,
+                "name": "Label",
+                "layer": 1073741824,
+                "position": [0, 0, 0],
+                "scale": [1, 1, 1],
+                "components": [
+                  {
+                    "type": "cc.Label",
+                    "properties": {
+                      "string": "开始对战",
+                      "fontSize": 24,
+                      "horizontalAlign": 1,
+                      "verticalAlign": 1
+                    }
+                  }
+                ]
+              }
+            ],
+            "components": [
+              {
+                "type": "cc.Button",
+                "properties": {
+                  "transition": 2,
+                  "zoomScale": 1.1
+                }
+              }
+            ]
+          },
+          {
+            "id": 8,
+            "name": "DeckButton",
+            "layer": 1073741824,
+            "position": [0, -20, 0],
+            "scale": [1, 1, 1],
+            "size": [200, 60],
+            "children": [
+              {
+                "id": 81,
+                "name": "Background",
+                "layer": 1073741824,
+                "position": [0, 0, 0],
+                "scale": [1, 1, 1],
+                "size": [200, 60],
+                "components": [
+                  {
+                    "type": "cc.Sprite",
+                    "properties": {
+                      "spriteFrame": null,
+                      "type": 1,
+                      "sizeMode": 0
+                    }
+                  }
+                ]
+              },
+              {
+                "id": 82,
+                "name": "Label",
+                "layer": 1073741824,
+                "position": [0, 0, 0],
+                "scale": [1, 1, 1],
+                "components": [
+                  {
+                    "type": "cc.Label",
+                    "properties": {
+                      "string": "卡组管理",
+                      "fontSize": 24,
+                      "horizontalAlign": 1,
+                      "verticalAlign": 1
+                    }
+                  }
+                ]
+              }
+            ],
+            "components": [
+              {
+                "type": "cc.Button",
+                "properties": {
+                  "transition": 2,
+                  "zoomScale": 1.1
+                }
+              }
+            ]
+          },
+          {
+            "id": 9,
+            "name": "AdventureButton",
+            "layer": 1073741824,
+            "position": [0, -100, 0],
+            "scale": [1, 1, 1],
+            "size": [200, 60],
+            "children": [
+              {
+                "id": 91,
+                "name": "Background",
+                "layer": 1073741824,
+                "position": [0, 0, 0],
+                "scale": [1, 1, 1],
+                "size": [200, 60],
+                "components": [
+                  {
+                    "type": "cc.Sprite",
+                    "properties": {
+                      "spriteFrame": null,
+                      "type": 1,
+                      "sizeMode": 0
+                    }
+                  }
+                ]
+              },
+              {
+                "id": 92,
+                "name": "Label",
+                "layer": 1073741824,
+                "position": [0, 0, 0],
+                "scale": [1, 1, 1],
+                "components": [
+                  {
+                    "type": "cc.Label",
+                    "properties": {
+                      "string": "冒险模式",
+                      "fontSize": 24,
+                      "horizontalAlign": 1,
+                      "verticalAlign": 1
+                    }
+                  }
+                ]
+              }
+            ],
+            "components": [
+              {
+                "type": "cc.Button",
+                "properties": {
+                  "transition": 2,
+                  "zoomScale": 1.1
+                }
+              }
+            ]
+          },
+          {
+            "id": 10,
+            "name": "LadderButton",
+            "layer": 1073741824,
+            "position": [0, -180, 0],
+            "scale": [1, 1, 1],
+            "size": [200, 60],
+            "children": [
+              {
+                "id": 101,
+                "name": "Background",
+                "layer": 1073741824,
+                "position": [0, 0, 0],
+                "scale": [1, 1, 1],
+                "size": [200, 60],
+                "components": [
+                  {
+                    "type": "cc.Sprite",
+                    "properties": {
+                      "spriteFrame": null,
+                      "type": 1,
+                      "sizeMode": 0
+                    }
+                  }
+                ]
+              },
+              {
+                "id": 102,
+                "name": "Label",
+                "layer": 1073741824,
+                "position": [0, 0, 0],
+                "scale": [1, 1, 1],
+                "components": [
+                  {
+                    "type": "cc.Label",
+                    "properties": {
+                      "string": "天梯排位",
+                      "fontSize": 24,
+                      "horizontalAlign": 1,
+                      "verticalAlign": 1
+                    }
+                  }
+                ]
+              }
+            ],
+            "components": [
+              {
+                "type": "cc.Button",
+                "properties": {
+                  "transition": 2,
+                  "zoomScale": 1.1
+                }
+              }
+            ]
+          },
+          {
+            "id": 11,
+            "name": "SettingsButton",
+            "layer": 1073741824,
+            "position": [380, 260, 0],
+            "scale": [1, 1, 1],
+            "size": [60, 60],
+            "children": [
+              {
+                "id": 111,
+                "name": "Background",
+                "layer": 1073741824,
+                "position": [0, 0, 0],
+                "scale": [1, 1, 1],
+                "size": [60, 60],
+                "components": [
+                  {
+                    "type": "cc.Sprite",
+                    "properties": {
+                      "spriteFrame": null,
+                      "type": 1,
+                      "sizeMode": 0
+                    }
+                  }
+                ]
+              },
+              {
+                "id": 112,
+                "name": "Label",
+                "layer": 1073741824,
+                "position": [0, 0, 0],
+                "scale": [1, 1, 1],
+                "components": [
+                  {
+                    "type": "cc.Label",
+                    "properties": {
+                      "string": "设置",
+                      "fontSize": 16,
+                      "horizontalAlign": 1,
+                      "verticalAlign": 1
+                    }
+                  }
+                ]
+              }
+            ],
+            "components": [
+              {
+                "type": "cc.Button",
+                "properties": {
+                  "transition": 2,
+                  "zoomScale": 1.1
+                }
+              }
+            ]
+          }
+        ],
+        "components": [
+          {
+            "type": "cc.Canvas",
+            "properties": {
+              "designResolution": [960, 640],
+              "fitWidth": false,
+              "fitHeight": true
+            }
+          }
+        ]
+      }
+    ],
+    "components": [],
+    "prefabs": []
+  }
+}
