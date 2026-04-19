@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>萌系卡牌对战</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        #gameContainer {
+            width: 960px;
+            height: 640px;
+            background: linear-gradient(180deg, #2d3a4a 0%, #1a2a3a 100%);
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            position: relative;
+            overflow: hidden;
+        }
+        .player-info {
+            position: absolute;
+            padding: 15px 20px;
+            background: rgba(0,0,0,0.4);
+            border-radius: 10px;
+            color: white;
+        }
+        #enemyInfo {
+            top: 10px;
+            left: 10px;
+        }
+        #playerInfo {
+            bottom: 10px;
+            left: 10px;
+        }
+        .hp-bar {
+            width: 200px;
+            height: 20px;
+            background: #333;
+            border-radius: 10px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        .hp-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #ff4757);
+            border-radius: 10px;
+            transition: width 0.3s;
+        }
+        .energy-bar {
+            width: 200px;
+            height: 12px;
+            background: #333;
+            border-radius: 6px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        .energy-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffd700, #ffaa00);
+            border-radius: 6px;
+            transition: width 0.3s;
+        }
+        .player-name {
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .player-hp, .player-energy {
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        #battleField {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 700px;
+            height: 280px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px 0;
+        }
+        .field-row {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            height: 100px;
+        }
+        .battle-cell {
+            width: 80px;
+            height: 100px;
+            background: rgba(255,255,255,0.1);
+            border: 2px dashed rgba(255,255,255,0.3);
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .battle-cell:hover {
+            background: rgba(255,255,255,0.2);
+            border-color: rgba(255,255,255,0.5);
+        }
+        .battle-cell.has-monster {
+            background: rgba(100,200,255,0.2);
+            border: 2px solid rgba(100,200,255,0.5);
+        }
+        .battle-cell.attacking {
+            box-shadow: 0 0 20px rgba(255,100,100,0.8);
+            border-color: #ff6666;
+        }
+        #handArea {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            padding: 10px;
+        }
+        .card {
+            width: 100px;
+            height: 140px;
+            background: linear-gradient(180deg, #3a4a5a 0%, #2a3a4a 100%);
+            border-radius: 10px;
+            border: 3px solid;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 5px;
+            position: relative;
+        }
+        .card:hover {
+            transform: translateY(-20px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .card.selected {
+            transform: translateY(-30px);
+            box-shadow: 0 15px 40px rgba(255,200,0,0.6);
+        }
+        .card.fire { border-color: #ff6644; }
+        .card.wood { border-color: #66dd66; }
+        .card.water { border-color: #4488ff; }
+        .card.light { border-color: #ffff66; }
+        .card.dark { border-color: #aa66ff; }
+        .card-cost {
+            position: absolute;
+            top: -8px;
+            left: -8px;
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, #4a90d9, #357abd);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+            border: 2px solid white;
+        }
+        .card-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin-top: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 40px;
+        }
+        .card.fire .card-image { background: linear-gradient(135deg, #ff6644, #cc4422); }
+        .card.wood .card-image { background: linear-gradient(135deg, #66dd66, #44aa44); }
+        .card.water .card-image { background: linear-gradient(135deg, #4488ff, #3366cc); }
+        .card.light .card-image { background: linear-gradient(135deg, #ffff66, #dddd44); }
+        .card.dark .card-image { background: linear-gradient(135deg, #aa66ff, #8844dd); }
+        .card-name {
+            font-size: 11px;
+            color: white;
+            margin-top: 5px;
+            text-align: center;
+        }
+        .card-stats {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: auto;
+            font-size: 12px;
+            color: white;
+        }
+        .card-attack { color: #ffaa44; }
+        .card-health { color: #ff6666; }
+        .monster {
+            width: 70px;
+            height: 90px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 30px;
+            position: relative;
+        }
+        .monster-stats {
+            display: flex;
+            justify-content: space-between;
+            width: 60px;
+            font-size: 10px;
+            margin-top: 5px;
+        }
+        .monster-attack { color: #ffaa44; }
+        .monster-health { color: #ff6666; }
+        #actionButtons {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .btn:hover {
+            transform: scale(1.05);
+        }
+        .btn-end-turn {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+        }
+        .btn-surrender {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            color: white;
+        }
+        #gameLog {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 250px;
+            max-height: 150px;
+            background: rgba(0,0,0,0.6);
+            border-radius: 8px;
+            padding: 10px;
+            overflow-y: auto;
+            font-size: 11px;
+            color: #ccc;
+        }
+        #gameLog p {
+            margin: 3px 0;
+        }
+        #gameOverlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        #gameOverlay.hidden {
+            display: none;
+        }
+        #overlayTitle {
+            font-size: 48px;
+            color: white;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(255,200,0,0.8);
+        }
+        #overlayMessage {
+            font-size: 18px;
+            color: #ccc;
+            margin-bottom: 30px;
+        }
+        .btn-restart {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            color: white;
+            padding: 15px 40px;
+            font-size: 18px;
+        }
+        #startScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+        }
+        #startScreen.hidden {
+            display: none;
+        }
+        #gameTitle {
+            font-size: 52px;
+            color: white;
+            margin-bottom: 10px;
+            text-shadow: 0 0 30px rgba(100,200,255,0.8);
+        }
+        #gameSubtitle {
+            font-size: 18px;
+            color: #88aacc;
+            margin-bottom: 50px;
+        }
+        .btn-start {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 18px 60px;
+            font-size: 22px;
+            margin-bottom: 15px;
+        }
+        .btn-start:hover {
+            transform: scale(1.08);
+            box-shadow: 0 10px 40px rgba(102,126,234,0.6);
+        }
+        .element-icon {
+            font-size: 20px;
+            position: absolute;
+            top: 5px;
+            right: 5px;
+        }
+        .combo-indicator {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
+            color: #333;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <!-- 开始界面 -->
+        <div id="startScreen">
+            <h1 id="gameTitle">萌系卡牌对战</h1>
+            <p id="gameSubtitle">元素相克 · 连携技能 · 策略对战</p>
+            <button class="btn btn-start" onclick="startGame()">开始对战</button>
+        </div>
+
+        <!-- 敌方信息 -->
+        <div class="player-info" id="enemyInfo">
+            <div class="player-name">AI 对手</div>
+            <div class="hp-bar"><div class="hp-fill" id="enemyHpBar" style="width: 100%"></div></div>
+            <div class="player-hp">生命: <span id="enemyHp">20</span>/20</div>
+            <div class="player-energy">能量: <span id="enemyEnergy">0</span>/10</div>
+        </div>
+
+        <!-- 玩家信息 -->
+        <div class="player-info" id="playerInfo">
+            <div class="player-name">玩家</div>
+            <div class="hp-bar"><div class="hp-fill" id="playerHpBar" style="width: 100%"></div></div>
+            <div class="player-hp">生命: <span id="playerHp">20</span>/20</div>
+            <div class="player-energy">水晶: <span id="playerCrystals">3</span>  能量: <span id="playerEnergy">0</span>/10</div>
+        </div>
+
+        <!-- 战斗区域 -->
+        <div id="battleField">
+            <div class="field-row" id="enemyField">
+                <div class="battle-cell" data-cell="0"></div>
+                <div class="battle-cell" data-cell="1"></div>
+                <div class="battle-cell" data-cell="2"></div>
+                <div class="battle-cell" data-cell="3"></div>
+                <div class="battle-cell" data-cell="4"></div>
+            </div>
+            <div class="field-row" id="playerField">
+                <div class="battle-cell" data-cell="0"></div>
+                <div class="battle-cell" data-cell="1"></div>
+                <div class="battle-cell" data-cell="2"></div>
+                <div class="battle-cell" data-cell="3"></div>
+                <div class="battle-cell" data-cell="4"></div>
+            </div>
+        </div>
+
+        <!-- 手牌 -->
+        <div id="handArea"></div>
+
+        <!-- 操作按钮 -->
+        <div id="actionButtons">
+            <button class="btn btn-end-turn" onclick="endTurn()">结束回合</button>
+            <button class="btn btn-surrender" onclick="surrender()">投降</button>
+        </div>
+
+        <!-- 游戏日志 -->
+        <div id="gameLog"></div>
+
+        <!-- 游戏结束遮罩 -->
+        <div id="gameOverlay" class="hidden">
+            <h2 id="overlayTitle">胜利!</h2>
+            <p id="overlayMessage">恭喜您击败了对手!</p>
+            <button class="btn btn-restart" onclick="restartGame()">再来一局</button>
+        </div>
+    </div>
+
+<script>
+// ========== 游戏配置 ==========
+const CONFIG = {
+    INITIAL_HP: 20,
+    INITIAL_CRYSTALS: 3,
+    MAX_CRYSTALS: 10,
+    MAX_ENERGY: 10,
+    CARDS_PER_TURN: 1,
+    MAX_HAND_SIZE: 7
+};
+
+const ELEMENTS = ['fire', 'wood', 'water', 'light', 'dark'];
+const ELEMENT_SYMBOLS = { fire: '🔥', wood: '🌲', water: '💧', light: '☀️', dark: '🌙' };
+const ELEMENT_ICONS = { fire: '🦊', wood: '🐰', water: '🐻', light: '🐱', dark: '🐦' };
+
+// 元素相克
+const ELEMENT_COUNTER = {
+    fire: { weakTo: 'water', strongTo: 'wood' },
+    wood: { weakTo: 'fire', strongTo: 'water' },
+    water: { weakTo: 'wood', strongTo: 'fire' },
+    light: { weakTo: 'dark', strongTo: null },
+    dark: { weakTo: 'light', strongTo: null }
+};
+
+// 卡牌模板
+const CARD_TEMPLATES = [
+    { name: '火焰狐狸', element: 'fire', cost: 2, attack: 3, health: 2 },
+    { name: '烈焰狮', element: 'fire', cost: 4, attack: 5, health: 4 },
+    { name: '森林兔', element: 'wood', cost: 2, attack: 2, health: 3 },
+    { name: '古木熊', element: 'wood', cost: 4, attack: 3, health: 6 },
+    { name: '流水狸', element: 'water', cost: 2, attack: 2, health: 4 },
+    { name: '深海鲸', element: 'water', cost: 5, attack: 4, health: 7 },
+    { name: '圣光猫', element: 'light', cost: 3, attack: 4, health: 3 },
+    { name: '暗影鸦', element: 'dark', cost: 3, attack: 5, health: 2 },
+    { name: '小火星', element: 'fire', cost: 1, attack: 1, health: 1 },
+    { name: '水珠蛙', element: 'water', cost: 1, attack: 1, health: 2 },
+    { name: '嫩芽精灵', element: 'wood', cost: 1, attack: 1, health: 1 },
+    { name: '闪光雀', element: 'light', cost: 2, attack: 3, health: 1 },
+    { name: '夜蛾', element: 'dark', cost: 2, attack: 2, health: 2 }
+];
+
+// ========== 游戏状态 ==========
+let gameState = {
+    player: {
+        hp: CONFIG.INITIAL_HP,
+        maxHp: CONFIG.INITIAL_HP,
+        crystals: CONFIG.INITIAL_CRYSTALS,
+        maxCrystals: CONFIG.INITIAL_CRYSTALS,
+        energy: 0,
+        maxEnergy: CONFIG.MAX_ENERGY,
+        hand: [],
+        field: [null, null, null, null, null],
+        deck: []
+    },
+    enemy: {
+        hp: CONFIG.INITIAL_HP,
+        maxHp: CONFIG.INITIAL_HP,
+        crystals: CONFIG.INITIAL_CRYSTALS,
+        maxCrystals: CONFIG.INITIAL_CRYSTALS,
+        energy: 0,
+        maxEnergy: CONFIG.MAX_ENERGY,
+        hand: [],
+        field: [null, null, null, null, null],
+        deck: []
+    },
+    turn: 'player',
+    turnNumber: 1,
+    selectedCard: null,
+    selectedMonster: null,
+    gameOver: false
+};
+
+// ========== 工具函数 ==========
+function shuffle(array) {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
+function log(message) {
+    const logDiv = document.getElementById('gameLog');
+    const p = document.createElement('p');
+    p.textContent = `回合${gameState.turnNumber}: ${message}`;
+    logDiv.insertBefore(p, logDiv.firstChild);
+    if (logDiv.children.length > 20) {
+        logDiv.removeChild(logDiv.lastChild);
+    }
+}
+
+function getElementAdvantage(attackElement, defenseElement) {
+    const counter = ELEMENT_COUNTER[attackElement];
+    if (counter.strongTo === defenseElement) return 1.5;
+    if (counter.weakTo === defenseElement) return 0.67;
+    return 1;
+}
+
+function calculateDamage(attacker, defender) {
+    const baseDamage = attacker.attack;
+    const multiplier = getElementAdvantage(attacker.element, defender.element);
+    return Math.floor(baseDamage * multiplier);
+}
+
+// ========== 初始化 ==========
+function initDeck(owner) {
+    const deck = [];
+    // 每个元素取3张
+    for (let i = 0; i < 3; i++) {
+        CARD_TEMPLATES.forEach(template => {
+            deck.push({ ...template, instanceId: `${owner}_${Math.random().toString(36).substr(2, 9)}` });
+        });
+    }
+    return shuffle(deck);
+}
+
+function initGame() {
+    gameState.player.deck = initDeck('player');
+    gameState.enemy.deck = initDeck('enemy');
+    gameState.player.hand = [];
+    gameState.enemy.hand = [];
+    gameState.player.field = [null, null, null, null, null];
+    gameState.enemy.field = [null, null, null, null, null];
+    gameState.player.hp = CONFIG.INITIAL_HP;
+    gameState.enemy.hp = CONFIG.INITIAL_HP;
+    gameState.player.crystals = CONFIG.INITIAL_CRYSTALS;
+    gameState.enemy.crystals = CONFIG.INITIAL_CRYSTALS;
+    gameState.player.energy = 0;
+    gameState.enemy.energy = 0;
+    gameState.turn = 'player';
+    gameState.turnNumber = 1;
+    gameState.selectedCard = null;
+    gameState.selectedMonster = null;
+    gameState.gameOver = false;
+
+    // 初始抽牌
+    for (let i = 0; i < 4; i++) {
+        drawCard('player');
+        drawCard('enemy');
+    }
+
+    updateUI();
+    log('游戏开始!');
+}
+
+function startGame() {
+    document.getElementById('startScreen').classList.add('hidden');
+    initGame();
+}
+
+function restartGame() {
+    document.getElementById('gameOverlay').classList.add('hidden');
+    document.getElementById('gameLog').innerHTML = '';
+    initGame();
+}
+
+// ========== 抽牌 ==========
+function drawCard(owner) {
+    const state = gameState[owner];
+    if (state.hand.length >= CONFIG.MAX_HAND_SIZE) {
+        log(`${owner === 'player' ? '玩家' : '对手'}手牌已满，无法抽牌`);
+        return null;
+    }
+    if (state.deck.length === 0) {
+        log(`${owner === 'player' ? '玩家' : '对手'}牌库为空!`);
+        return null;
+    }
+    const card = state.deck.pop();
+    state.hand.push(card);
+    return card;
+}
+
+// ========== 出牌 ==========
+function playCard(cardIndex, cellIndex) {
+    const player = gameState.player;
+    const cell = player.field[cellIndex];
+    
+    if (cell !== null) {
+        log('该位置已有生物!');
+        return;
+    }
+
+    const card = player.hand[cardIndex];
+    if (card.cost > player.crystals) {
+        log('水晶不足!');
+        return;
+    }
+
+    player.crystals -= card.cost;
+    player.hand.splice(cardIndex, 1);
+    
+    const monster = {
+        ...card,
+        currentHealth: card.health,
+        maxHealth: card.health,
+        canAttack: false
+    };
+    player.field[cellIndex] = monster;
+    
+    log(`玩家出牌: ${card.name}`);
+    
+    // 检查连携
+    checkCombo('player');
+    
+    // 更新显示
+    gameState.selectedCard = null;
+    updateUI();
+    renderHand();
+    renderField();
+}
+
+function checkCombo(owner) {
+    const state = gameState[owner];
+    const elementCounts = {};
+    
+    state.field.forEach(monster => {
+        if (monster) {
+            elementCounts[monster.element] = (elementCounts[monster.element] || 0) + 1;
+        }
+    });
+
+    let comboText = '';
+    for (const element in elementCounts) {
+        if (elementCounts[element] >= 3) {
+            const bonus = elementCounts[element] >= 5 ? '20%' : '10%';
+            comboText += `${ELEMENT_SYMBOLS[element]}连携${bonus}! `;
+        }
+    }
+    if (comboText) {
+        log(`${owner === 'player' ? '玩家' : '对手'}触发${comboText}`);
+    }
+}
+
+// ========== 攻击 ==========
+function attack(attackerOwner, attackerCell, defenderOwner, defenderCell) {
+    const attackerState = gameState[attackerOwner];
+    const defenderState = gameState[defenderOwner];
+    
+    const attacker = attackerState.field[attackerCell];
+    const defender = defenderState.field[defenderCell];
+
+    if (!attacker || !defender || !attacker.canAttack) return;
+
+    const damage = calculateDamage(attacker, defender);
+    defender.currentHealth -= damage;
+    
+    const attackerName = attackerOwner === 'player' ? '玩家' : '对手';
+    const defenderName = defenderOwner === 'player' ? '玩家' : '对手';
+    
+    log(`${attackerName}的${attacker.name}攻击${defenderName}的${defender.name}, 造成${damage}点伤害`);
+
+    attacker.canAttack = false;
+
+    // 检查是否击杀
+    if (defender.currentHealth <= 0) {
+        defenderState.field[defenderCell] = null;
+        log(`${defenderName}的${defender.name}被击杀!`);
+    }
+
+    updateUI();
+    renderField();
+    checkGameOver();
+}
+
+function attackEnemyBase(attackerOwner, attackerCell) {
+    const attackerState = gameState[attackerOwner];
+    const defenderState = attackerOwner === 'player' ? gameState.enemy : gameState.player;
+    
+    const attacker = attackerState.field[attackerCell];
+    if (!attacker || !attacker.canAttack) return;
+
+    const damage = attacker.attack;
+    defenderState.hp -= damage;
+    
+    const attackerName = attackerOwner === 'player' ? '玩家' : '对手';
+    log(`${attackerName}的${attacker.name}攻击敌方基地, 造成${damage}点伤害`);
+
+    attacker.canAttack = false;
+
+    updateUI();
+    renderField();
+    checkGameOver();
+}
+
+// ========== 回合结束 ==========
+function endTurn() {
+    if (gameState.turn !== 'player') return;
+
+    // 玩家回合结束
+    gameState.selectedCard = null;
+    gameState.selectedMonster = null;
+    
+    // 重置场上生物攻击状态
+    gameState.player.field.forEach(monster => {
+        if (monster) monster.canAttack = true;
+    });
+
+    // 切换到对手回合
+    gameState.turn = 'enemy';
+    log('对手回合');
+    updateUI();
+
+    // 对手回合
+    setTimeout(() => {
+        enemyTurn();
+    }, 1000);
+}
+
+function enemyTurn() {
+    // 回合开始
+    gameState.turnNumber++;
+    gameState.enemy.crystals = Math.min(gameState.enemy.crystals + 1, CONFIG.MAX_CRYSTALS);
+    gameState.enemy.energy = Math.min(gameState.enemy.energy + 1, CONFIG.MAX_ENERGY);
+    
+    // 抽牌
+    drawCard('enemy');
+    log('对手抽牌');
+
+    // AI 出牌
+    setTimeout(() => {
+        enemyPlayCards();
+    }, 500);
+}
+
+function enemyPlayCards() {
+    const enemy = gameState.enemy;
+    
+    // 找空位
+    const emptyCells = [];
+    enemy.field.forEach((cell, i) => {
+        if (cell === null) emptyCells.push(i);
+    });
+
+    // 出牌
+    let played = false;
+    for (let i = enemy.hand.length - 1; i >= 0; i--) {
+        const card = enemy.hand[i];
+        if (card.cost <= enemy.crystals && emptyCells.length > 0) {
+            const cellIndex = emptyCells.pop();
+            enemy.crystals -= card.cost;
+            enemy.hand.splice(i, 1);
+            
+            const monster = {
+                ...card,
+                currentHealth: card.health,
+                maxHealth: card.health,
+                canAttack: false
+            };
+            enemy.field[cellIndex] = monster;
+            
+            log(`对手出牌: ${card.name}`);
+            played = true;
+        }
+    }
+
+    updateUI();
+    renderField();
+
+    // 延迟后攻击
+    setTimeout(() => {
+        enemyAttack();
+    }, 800);
+}
+
+function enemyAttack() {
+    const enemy = gameState.enemy;
+    const player = gameState.player;
+
+    // 攻击玩家生物
+    for (let i = 0; i < 5; i++) {
+        const attacker = enemy.field[i];
+        if (attacker && attacker.canAttack) {
+            // 找玩家生物
+            for (let j = 0; j < 5; j++) {
+                if (player.field[j]) {
+                    attack('enemy', i, 'player', j);
+                    break;
+                }
+            }
+        }
+    }
+
+    // 攻击玩家基地
+    for (let i = 0; i < 5; i++) {
+        const attacker = enemy.field[i];
+        if (attacker && attacker.canAttack) {
+            attackEnemyBase('enemy', i);
+        }
+    }
+
+    if (gameState.gameOver) return;
+
+    // 切换回玩家回合
+    setTimeout(() => {
+        startPlayerTurn();
+    }, 500);
+}
+
+function startPlayerTurn() {
+    gameState.turn = 'player';
+    gameState.player.crystals = Math.min(gameState.player.crystals + 1, CONFIG.MAX_CRYSTALS);
+    gameState.player.energy = Math.min(gameState.player.energy + 1, CONFIG.MAX_ENERGY);
+    
+    // 抽牌
+    drawCard('player');
+    
+    // 重置攻击状态
+    gameState.player.field.forEach(monster => {
+        if (monster) monster.canAttack = true;
+    });
+
+    log('玩家回合');
+    updateUI();
+    renderField();
+    renderHand();
+}
+
+function surrender() {
+    if (confirm('确定要投降吗?')) {
+        gameState.enemy.hp = 0;
+        checkGameOver();
+    }
+}
+
+// ========== 游戏结束 ==========
+function checkGameOver() {
+    if (gameState.player.hp <= 0) {
+        gameState.gameOver = true;
+        showGameOver(false);
+    } else if (gameState.enemy.hp <= 0) {
+        gameState.gameOver = true;
+        showGameOver(true);
+    }
+}
+
+function showGameOver(playerWon) {
+    const overlay = document.getElementById('gameOverlay');
+    const title = document.getElementById('overlayTitle');
+    const message = document.getElementById('overlayMessage');
+    
+    if (playerWon) {
+        title.textContent = '胜利!';
+        title.style.color = '#ffd700';
+        message.textContent = '恭喜您击败了对手!';
+    } else {
+        title.textContent = '失败...';
+        title.style.color = '#ff6666';
+        message.textContent = '对手击败了您, 请再接再厉!';
+    }
+    
+    overlay.classList.remove('hidden');
+}
+
+// ========== UI 渲染 ==========
+function updateUI() {
+    // 玩家信息
+    document.getElementById('playerHp').textContent = gameState.player.hp;
+    document.getElementById('playerHpBar').style.width = `${(gameState.player.hp / gameState.player.maxHp) * 100}%`;
+    document.getElementById('playerCrystals').textContent = gameState.player.crystals;
+    document.getElementById('playerEnergy').textContent = gameState.player.energy;
+
+    // 对手信息
+    document.getElementById('enemyHp').textContent = gameState.enemy.hp;
+    document.getElementById('enemyHpBar').style.width = `${(gameState.enemy.hp / gameState.enemy.maxHp) * 100}%`;
+    document.getElementById('enemyEnergy').textContent = gameState.enemy.energy;
+}
+
+function renderHand() {
+    const handArea = document.getElementById('handArea');
+    handArea.innerHTML = '';
+
+    gameState.player.hand.forEach((card, index) => {
+        const cardEl = document.createElement('div');
+        cardEl.className = `card ${card.element}`;
+        cardEl.innerHTML = `
+            <div class="card-cost">${card.cost}</div>
+            <div class="element-icon">${ELEMENT_SYMBOLS[card.element]}</div>
+            <div class="card-image">${ELEMENT_ICONS[card.element]}</div>
+            <div class="card-name">${card.name}</div>
+            <div class="card-stats">
+                <span class="card-attack">⚔️${card.attack}</span>
+                <span class="card-health">❤️${card.health}</span>
+            </div>
+        `;
+        
+        cardEl.onclick = () => selectCard(index);
+        handArea.appendChild(cardEl);
+    });
+}
+
+function renderField() {
+    const playerFieldEl = document.getElementById('playerField');
+    const enemyFieldEl = document.getElementById('enemyField');
+
+    // 玩家战场
+    playerFieldEl.querySelectorAll('.battle-cell').forEach((cell, index) => {
+        const monster = gameState.player.field[index];
+        cell.innerHTML = '';
+        cell.className = 'battle-cell';
+        
+        if (monster) {
+            cell.classList.add('has-monster');
+            if (gameState.selectedMonster && gameState.selectedMonster.cell === index && gameState.selectedMonster.owner === 'player') {
+                cell.classList.add('attacking');
+            }
+            
+            const monsterEl = document.createElement('div');
+            monsterEl.className = 'monster';
+            monsterEl.innerHTML = `
+                <div class="element-icon" style="font-size:14px">${ELEMENT_SYMBOLS[monster.element]}</div>
+                <div style="font-size:24px">${ELEMENT_ICONS[monster.element]}</div>
+                <div class="monster-stats">
+                    <span class="monster-attack">⚔️${monster.attack}</span>
+                    <span class="monster-health">❤️${monster.currentHealth}</span>
+                </div>
+                ${monster.canAttack ? '<div style="position:absolute;bottom:2px;font-size:8px;color:#4CAF50">可攻击</div>' : ''}
+            `;
+            monsterEl.onclick = (e) => {
+                e.stopPropagation();
+                selectMonster('player', index);
+            };
+            cell.appendChild(monsterEl);
+        }
+    });
+
+    // 对手战场
+    enemyFieldEl.querySelectorAll('.battle-cell').forEach((cell, index) => {
+        const monster = gameState.enemy.field[index];
+        cell.innerHTML = '';
+        cell.className = 'battle-cell';
+        
+        if (monster) {
+            cell.classList.add('has-monster');
+            if (gameState.selectedMonster && gameState.selectedMonster.cell === index && gameState.selectedMonster.owner === 'enemy') {
+                cell.classList.add('attacking');
+            }
+            
+            const monsterEl = document.createElement('div');
+            monsterEl.className = 'monster';
+            monsterEl.innerHTML = `
+                <div class="element-icon" style="font-size:14px">${ELEMENT_SYMBOLS[monster.element]}</div>
+                <div style="font-size:24px">${ELEMENT_ICONS[monster.element]}</div>
+                <div class="monster-stats">
+                    <span class="monster-attack">⚔️${monster.attack}</span>
+                    <span class="monster-health">❤️${monster.currentHealth}</span>
+                </div>
+            `;
+            cell.appendChild(monsterEl);
+        }
+    });
+
+    // 点击空地出牌
+    document.querySelectorAll('.battle-cell').forEach((cell, index) => {
+        if (!gameState.player.field[index]) {
+            cell.onclick = () => {
+                if (gameState.selectedCard !== null && gameState.turn === 'player') {
+                    playCard(gameState.selectedCard, index);
+                }
+            };
+        }
+    });
+}
+
+function selectCard(index) {
+    const card = gameState.player.hand[index];
+    
+    if (card.cost > gameState.player.crystals) {
+        log('水晶不足,无法出牌!');
+        return;
+    }
+
+    if (gameState.selectedCard === index) {
+        gameState.selectedCard = null;
+    } else {
+        gameState.selectedCard = index;
+        log(`选择卡牌: ${card.name}`);
+    }
+
+    // 取消选择生物
+    gameState.selectedMonster = null;
+    
+    renderHand();
+    renderField();
+}
+
+function selectMonster(owner, cell) {
+    if (gameState.turn !== 'player') return;
+
+    const monster = gameState[owner].field[cell];
+
+    // 如果选择了己方生物
+    if (owner === 'player') {
+        if (gameState.selectedCard !== null) {
+            // 出牌到该位置
+            playCard(gameState.selectedCard, cell);
+            return;
+        }
+        
+        if (gameState.selectedMonster && gameState.selectedMonster.cell === cell) {
+            gameState.selectedMonster = null;
+        } else {
+            gameState.selectedMonster = { owner, cell };
+            log(`选择生物: ${monster.name}`);
+        }
+        renderField();
+        return;
+    }
+
+    // 攻击对手生物
+    if (gameState.selectedMonster && gameState.selectedMonster.owner === 'player') {
+        attack('player', gameState.selectedMonster.cell, 'enemy', cell);
+        gameState.selectedMonster = null;
+        renderField();
+        return;
+    }
+
+    // 直接攻击对手基地
+    if (gameState.selectedMonster && gameState.selectedMonster.owner === 'player') {
+        attackEnemyBase('player', gameState.selectedMonster.cell);
+        gameState.selectedMonster = null;
+        renderField();
+        checkGameOver();
+    }
+}
+
+// ========== 初始化显示 ==========
+document.addEventListener('DOMContentLoaded', () => {
+    // 预渲染战场
+    renderField();
+    renderHand();
+});
+</script>
+</body>
+</html>
