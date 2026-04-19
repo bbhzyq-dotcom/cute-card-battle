@@ -974,14 +974,17 @@ function renderField() {
         }
     });
 
-    // 点击空地出牌
-    document.querySelectorAll('.battle-cell').forEach((cell, index) => {
+    // 点击玩家战场空地出牌
+    playerFieldEl.querySelectorAll('.battle-cell').forEach((cell, index) => {
+        // index 是 0-4，对应 player.field[0-4]
         if (!gameState.player.field[index]) {
             cell.onclick = () => {
                 if (gameState.selectedCard !== null && gameState.turn === 'player') {
                     playCard(gameState.selectedCard, index);
                 }
             };
+        } else {
+            cell.onclick = null; // 清除已占用格子的点击
         }
     });
 }
