@@ -453,6 +453,65 @@
         <div id="actionButtons">
             <button class="btn btn-end-turn" onclick="endTurn()">结束回合</button>
             <button class="btn btn-surrender" onclick="surrender()">投降</button>
+            <button class="btn btn-help" onclick="showHelp()" style="background: linear-gradient(135deg, #888, #666);">游戏说明</button>
+        </div>
+
+        <!-- 游戏说明弹窗 -->
+        <div id="helpOverlay" class="hidden" style="
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 150;
+        ">
+            <div style="
+                background: linear-gradient(135deg, #2a3a4a, #1a2a3a);
+                border-radius: 15px;
+                padding: 30px;
+                max-width: 500px;
+                max-height: 80%;
+                overflow-y: auto;
+                color: white;
+            ">
+                <h2 style="text-align:center; margin-bottom:20px; color:#ffd700;">游戏说明</h2>
+                
+                <h3 style="color:#66aaff;">基础操作</h3>
+                <ul style="font-size:14px; line-height:1.8;">
+                    <li>点击手牌 → 选中卡牌（卡牌上移）</li>
+                    <li>点击空地 → 出牌到该位置</li>
+                    <li>点击己方生物 → 选中攻击者</li>
+                    <li>点击敌方生物/基地 → 发起攻击</li>
+                    <li>新出生物当回合<strong style="color:#ff6666;">不能攻击</strong></li>
+                </ul>
+                
+                <h3 style="color:#66aaff; margin-top:20px;">元素相克</h3>
+                <ul style="font-size:14px; line-height:1.8;">
+                    <li>🔥 火 → 🌲 木 （伤害x1.5）</li>
+                    <li>🌲 木 → 💧 水 （伤害x1.5）</li>
+                    <li>💧 水 → 🔥 火 （伤害x1.5）</li>
+                    <li>☀️ 光 ↔ 🌙 暗 （互克，伤害x1.5）</li>
+                    <li>被克制时伤害 x0.67</li>
+                </ul>
+                
+                <h3 style="color:#66aaff; margin-top:20px;">连携系统</h3>
+                <ul style="font-size:14px; line-height:1.8;">
+                    <li>场上同属性生物 ≥3 张 → 攻击/生命 +10%</li>
+                    <li>场上同属性生物 ≥5 张 → 攻击/生命 +20%</li>
+                </ul>
+                
+                <h3 style="color:#66aaff; margin-top:20px;">胜负条件</h3>
+                <ul style="font-size:14px; line-height:1.8;">
+                    <li>将敌方基地HP降到0即获胜</li>
+                </ul>
+                
+                <button onclick="hideHelp()" class="btn" style="
+                    margin-top: 25px;
+                    width: 100%;
+                    background: linear-gradient(135deg, #667eea, #764ba2);
+                ">知道了!</button>
+            </div>
         </div>
 
         <!-- 游戏日志 -->
@@ -794,6 +853,11 @@ function enemyTurn() {
     gameState.enemy.crystals = Math.min(gameState.enemy.crystals + 1, CONFIG.MAX_CRYSTALS);
     gameState.enemy.energy = Math.min(gameState.enemy.energy + 1, CONFIG.MAX_ENERGY);
     
+    // 重置敌方生物攻击状态
+    gameState.enemy.field.forEach(monster => {
+        if (monster) monster.canAttack = true;
+    });
+    
     // 抽牌
     drawCard('enemy');
     log('对手抽牌');
@@ -895,6 +959,14 @@ function startPlayerTurn() {
     updateUI();
     renderField();
     renderHand();
+}
+
+function showHelp() {
+    document.getElementById('helpOverlay').classList.remove('hidden');
+}
+
+function hideHelp() {
+    document.getElementById('helpOverlay').classList.add('hidden');
 }
 
 function surrender() {
