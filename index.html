@@ -384,6 +384,50 @@
             <div class="player-energy">水晶: <span id="playerCrystals">3</span>  能量: <span id="playerEnergy">0</span>/10</div>
         </div>
 
+        <!-- 敌方基地 -->
+        <div id="enemyBase" onclick="attackEnemyBaseClick()" style="
+            position: absolute;
+            top: 100px;
+            right: 10px;
+            width: 100px;
+            height: 60px;
+            background: linear-gradient(135deg, #ff4444, #cc0000);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(255,0,0,0.4);
+            transition: all 0.2s;
+        ">
+            <div style="font-size: 14px;">敌方基地</div>
+            <div style="font-size: 20px;">❤️ <span id="enemyBaseHp">20</span></div>
+        </div>
+
+        <!-- 玩家基地 -->
+        <div id="playerBase" style="
+            position: absolute;
+            bottom: 100px;
+            right: 10px;
+            width: 100px;
+            height: 60px;
+            background: linear-gradient(135deg, #44ff44, #00cc00);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,255,0,0.4);
+        ">
+            <div style="font-size: 14px;">我的基地</div>
+            <div style="font-size: 20px;">❤️ <span id="playerBaseHp">20</span></div>
+        </div>
+
         <!-- 战斗区域 -->
         <div id="battleField">
             <div class="field-row" id="enemyField">
@@ -707,6 +751,19 @@ function attackEnemyBase(attackerOwner, attackerCell) {
     checkGameOver();
 }
 
+// 点击敌方基地攻击
+function attackEnemyBaseClick() {
+    if (gameState.turn !== 'player') return;
+    if (!gameState.selectedMonster || gameState.selectedMonster.owner !== 'player') {
+        log('请先选择一个己方生物!');
+        return;
+    }
+    
+    attackEnemyBase('player', gameState.selectedMonster.cell);
+    gameState.selectedMonster = null;
+    renderField();
+}
+
 // ========== 回合结束 ==========
 function endTurn() {
     if (gameState.turn !== 'player') return;
@@ -888,6 +945,10 @@ function updateUI() {
     document.getElementById('enemyHp').textContent = gameState.enemy.hp;
     document.getElementById('enemyHpBar').style.width = `${(gameState.enemy.hp / gameState.enemy.maxHp) * 100}%`;
     document.getElementById('enemyEnergy').textContent = gameState.enemy.energy;
+
+    // 基地HP
+    document.getElementById('enemyBaseHp').textContent = gameState.enemy.hp;
+    document.getElementById('playerBaseHp').textContent = gameState.player.hp;
 }
 
 function renderHand() {
@@ -971,6 +1032,15 @@ function renderField() {
                 </div>
             `;
             cell.appendChild(monsterEl);
+            
+            // 敌方生物点击 = 攻击
+            cell.onclick = () => {
+                if (gameState.selectedMonster && gameState.selectedMonster.owner === 'player') {
+                    attack('player', gameState.selectedMonster.cell, 'enemy', index);
+                    gameState.selectedMonster = null;
+                    renderField();
+                }
+            };
         }
     });
 
